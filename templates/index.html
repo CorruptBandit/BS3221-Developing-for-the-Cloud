@@ -68,86 +68,81 @@
         petCounter++;
         const petFieldDiv = document.createElement("div");
         petFieldDiv.innerHTML = `
-                <h4>Pet ${petCounter}</h4>
-                <div class="form-group">
-                  <label for="petType${petCounter}">Pet Type</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="petType${petCounter}"
-                    placeholder="Type"
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="petName${petCounter}">Pet Name</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="petName${petCounter}"
-                    placeholder="Name"
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="petAge${petCounter}">Pet Age</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="petAge${petCounter}"
-                    placeholder="Age"
-                  />
-                </div>
-              `;
+                      <h4>Pet ${petCounter}</h4>
+                      <div class="form-group">
+                        <label for="petSpecies${petCounter}">Pet Species</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="petSpecies${petCounter}"
+                          placeholder="Species"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label for="petName${petCounter}">Pet Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="petName${petCounter}"
+                          placeholder="Name"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label for="petAge${petCounter}">Pet Age</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="petAge${petCounter}"
+                          placeholder="Age"
+                        />
+                      </div>
+                    `;
         petFields.appendChild(petFieldDiv);
       }
 
       // Add pet fields when the "Add Pet" button is clicked
       addPetBtn.addEventListener("click", addPetFields);
 
-      // Function to collect form data and submit
-      // Function to collect form data and submit
-      function submitForm() {
-        // Collect user information
-        const email = document.getElementById("exampleInputEmail1").value;
-        const password = document.getElementById("exampleInputPassword1").value;
+      // Wait for the DOM to load before submitting the form
+      document.addEventListener("DOMContentLoaded", submitForm);
 
-        // Collect pet information
-        const petData = [];
-        for (let i = 1; i <= petCounter; i++) {
-          const type = document.getElementById(`petType${i}`).value;
-          const name = document.getElementById(`petName${i}`).value;
-          const age = document.getElementById(`petAge${i}`).value;
-          petData.push({ type, name, age });
-        }
+      async function submitForm() {
+  const userData = {
+    email: document.getElementById("exampleInputEmail1").value,
+    password: document.getElementById("exampleInputPassword1").value,
+  };
 
-        // Create the data object to send, including the "email" field
-        const data = {
-          email, // Include the email field
-          password,
-          petData,
-        };
-        console.log(data);
-        // Send the data to the server using a POST request
-        fetch("/register", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // Handle the response from the server, e.g., show a success message
-            console.log(data);
-            form.style.display = "none";
-            successPage.style.display = "block";
-          })
-          .catch((error) => {
-            // Handle any errors that occurred during the fetch.
-            console.error("Error:", error);
-          });
-      }
+  const petData = [];
+  for (let i = 1; i <= petCounter; i++) {
+    const species = document.getElementById(`petSpecies${i}`).value;
+    const name = document.getElementById(`petName${i}`).value;
+    const age = document.getElementById(`petAge${i}`).value;
+    petData.push({ species, name, age });
+  }
 
-      // Add a click event listener to the submit button
+  const requestBody = {
+    user: userData,
+    pets: petData,
+  };
+  console.log(requestBody);
+  const response = await fetch("/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (response.status === 200) {
+    successPage.style.display = "block";
+  } else {
+    // Handle the error response
+    const error = await response.json();
+    console.error("Error:", error);
+  }
+}
+
+
       submitBtn.addEventListener("click", submitForm);
     </script>
   </body>

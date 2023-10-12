@@ -3,10 +3,11 @@
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import Form, Request, status
+from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import markdown
@@ -34,52 +35,43 @@ template_dir = SCRIPT_DIR / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
 # Create a model to represent the user data
-class UserData:
-    def __init__(self, email, password, pets=None):
-        self.email = email
-        self.password = password
-        self.pets = pets if pets is not None else []
+class User(BaseModel):
+    email: str
+    password: str
 
 # Create a model to represent the pet data
-class PetData:
-    def __init__(self, type, name, age):
-        self.type = type
-        self.name = name
-        self.age = age
+class Pet(BaseModel):
+    species: str
+    name: str
+    age: str
+
+uri = "mongodb+srv://University:Winchester123@bs3221.gurmf48.mongodb.net/?retryWrites=true&w=majority"
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+# Send a ping to confirm a successful connection
 
 
-def mongo_connect():
-    uri = "mongodb+srv://University:Winchester123@bs3221.gurmf48.mongodb.net/?retryWrites=true&w=majority"
-    # Create a new client and connect to the server
-    client = MongoClient(uri, server_api=ServerApi('1'))
-    # Send a ping to confirm a successful connection
-    try:
-        client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
-    except Exception as e:
-        print(e)
-    return client["PetCompany"]
+users_collection = client["PetCompany"]["Users"]
+pets_collection = client["PetCompany"]["Pets"]
+
+async def save_user(user: User):
+    users_collection.insert_one(user.dict())
+
+async def save_pet(pet: Pet):
+    pets_collection.insert_one(pet.dict())
 
 @app.get("", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 async def redirect_typer():
-    return RedirectResponse(f"{config['proxy_path']}/readme")
+    return RedirectResponse(f"{config['proxy_path']}/index")
 
 
-@app.get("/readme", response_class=HTMLResponse,
+@app.get("/index", response_class=HTMLResponse,
          status_code=status.HTTP_200_OK,
-         summary="Return markdown of readme",
+         summary="Return the index.html",
          include_in_schema=False)
 async def index(request: Request):
-    with open(SCRIPT_DIR / "README.md", "r", encoding="utf-8") as input_file:
-        text = input_file.read()
-
-    html = markdown.markdown(text, extensions=['tables'])
-    data = {
-        "text": html
-    }
     return templates.TemplateResponse("/index.html", context={"request": request})
-
 
 @app.get("/status", include_in_schema=False)
 async def get_status():
@@ -91,37 +83,12 @@ async def get_status():
     return 200
 
 @app.post("/register", include_in_schema=False)
-@app.post("/register", include_in_schema=False)
-async def process_registration(
-    email: str = Form(...),
-    password: str = Form(...),
-    petData: Optional[List[dict]] = Form(None)
-):
-    db = mongo_connect()
-    pets = []
-
-    if petData:
-        for pet_item in petData:
-            pet_type = pet_item.get("type", "")
-            pet_name = pet_item.get("name", "")
-            pet_age = pet_item.get("age", 0)
-            pet = PetData(pet_type, pet_name, pet_age)
-            pets.append(pet)
-
-    # Create the user data
-    user_data = UserData(email, password, pets)
-
-    # Store user data in the Users collection
-    users_collection = db["Users"]
-    user_id = users_collection.insert_one(user_data.__dict__).inserted_id
-
-    # Store pet data in the Pets collection
-    pets_collection = db["Pets"]
+async def register(user: User = Body(...), pets: List[Pet] = Body(...)):
+    with open("Test.txt", "w") as f:
+        f.write(f"{user}, {pets[0]}")
+    await save_user(user)
     for pet in pets:
-        pet_data = {"type": pet.type, "name": pet.name, "age": pet.age, "user_id": user_id}
-        pets_collection.insert_one(pet_data)
-
-    return {"message": "Registration successful!", "user": user_data.__dict__}
+        await save_pet(pet)
 
 
 @app.get("/user", include_in_schema=False)
