@@ -103,44 +103,40 @@
       // Add pet fields when the "Add Pet" button is clicked
       addPetBtn.addEventListener("click", addPetFields);
 
-      // Wait for the DOM to load before submitting the form
-      document.addEventListener("DOMContentLoaded", submitForm);
-
       async function submitForm() {
-  const userData = {
-    email: document.getElementById("exampleInputEmail1").value,
-    password: document.getElementById("exampleInputPassword1").value,
-  };
+        const userData = {
+          email: document.getElementById("exampleInputEmail1").value,
+          password: document.getElementById("exampleInputPassword1").value,
+        };
 
-  const petData = [];
-  for (let i = 1; i <= petCounter; i++) {
-    const species = document.getElementById(`petSpecies${i}`).value;
-    const name = document.getElementById(`petName${i}`).value;
-    const age = document.getElementById(`petAge${i}`).value;
-    petData.push({ species, name, age });
-  }
+        const petData = [];
+        for (let i = 1; i <= petCounter; i++) {
+          const species = document.getElementById(`petSpecies${i}`).value;
+          const name = document.getElementById(`petName${i}`).value;
+          const age = document.getElementById(`petAge${i}`).value;
+          petData.push({ species, name, age });
+        }
 
-  const requestBody = {
-    user: userData,
-    pets: petData,
-  };
-  console.log(requestBody);
-  const response = await fetch("/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
+        const requestBody = {
+          user: userData,
+          pets: petData,
+        };
+        const response = await fetch("/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-  if (response.status === 200) {
-    successPage.style.display = "block";
-  } else {
-    // Handle the error response
-    const error = await response.json();
-    console.error("Error:", error);
-  }
-}
+        if (response.status === 200) {
+          successPage.style.display = "block";
+        } else {
+          // Handle the error response
+          const error = await response.json();
+          console.error("Error:", error);
+        }
+      }
 
 
       submitBtn.addEventListener("click", submitForm);

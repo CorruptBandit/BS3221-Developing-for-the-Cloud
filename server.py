@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import certifi
 import markdown
 import uvicorn
 
@@ -47,7 +48,7 @@ class Pet(BaseModel):
 
 uri = "mongodb+srv://University:Winchester123@bs3221.gurmf48.mongodb.net/?retryWrites=true&w=majority"
 # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
 # Send a ping to confirm a successful connection
 
 
@@ -55,10 +56,10 @@ users_collection = client["PetCompany"]["Users"]
 pets_collection = client["PetCompany"]["Pets"]
 
 async def save_user(user: User):
-    users_collection.insert_one(user.dict())
+    users_collection.model_dump(user.dict())
 
 async def save_pet(pet: Pet):
-    pets_collection.insert_one(pet.dict())
+    pets_collection.model_dump(pet.dict())
 
 @app.get("", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
@@ -84,8 +85,6 @@ async def get_status():
 
 @app.post("/register", include_in_schema=False)
 async def register(user: User = Body(...), pets: List[Pet] = Body(...)):
-    with open("Test.txt", "w") as f:
-        f.write(f"{user}, {pets[0]}")
     await save_user(user)
     for pet in pets:
         await save_pet(pet)
