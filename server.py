@@ -48,7 +48,7 @@ async def index(request: Request):
     data = {
         "text": html
     }
-    return templates.TemplateResponse("/page.html", {"request": request, "data": data})
+    return templates.TemplateResponse("/index.html", context={"request": request})
 
 
 @app.get("/status", include_in_schema=False)

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Registration Form</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <form id="registrationForm">
+      <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          id="exampleInputEmail1"
+          aria-describedby="emailHelp"
+          placeholder="Enter email"
+        />
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="exampleInputPassword1"
+          placeholder="Password"
+        />
+      </div>
+
+      <div id="petFields">
+        <!-- Pet fields will be dynamically added here -->
+      </div>
+
+      <button type="button" class="btn btn-primary" id="addPetBtn">
+        Add Pet
+      </button>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <div id="successPage" style="display: none">
+      <h2>Form Submitted Successfully!</h2>
+      <p>Thank you for your submission.</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+    <script>
+      // JavaScript to handle adding and submitting pets
+      const form = document.getElementById("registrationForm");
+      const addPetBtn = document.getElementById("addPetBtn");
+      const petFields = document.getElementById("petFields");
+      const successPage = document.getElementById("successPage");
+
+      // Counter for tracking the number of added pets
+      let petCounter = 0;
+
+      // Function to add input fields for a pet
+      function addPetFields() {
+        petCounter++;
+        const petFieldDiv = document.createElement("div");
+        petFieldDiv.innerHTML = `
+          <h4>Pet ${petCounter}</h4>
+          <div class="form-group">
+            <label for="petType${petCounter}">Pet Type</label>
+            <input
+              type="text"
+              class="form-control"
+              id="petType${petCounter}"
+              placeholder="Type"
+            />
+          </div>
+          <div class="form-group">
+            <label for="petName${petCounter}">Pet Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="petName${petCounter}"
+              placeholder="Name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="petAge${petCounter}">Pet Age</label>
+            <input
+              type="number"
+              class="form-control"
+              id="petAge${petCounter}"
+              placeholder="Age"
+            />
+          </div>
+        `;
+        petFields.appendChild(petFieldDiv);
+      }
+
+      // Add pet fields when the "Add Pet" button is clicked
+      addPetBtn.addEventListener("click", addPetFields);
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        // Collect pet information
+        const petData = [];
+        for (let i = 1; i <= petCounter; i++) {
+          petData.push({
+            type: document.getElementById(`petType${i}`).value,
+            name: document.getElementById(`petName${i}`).value,
+            age: document.getElementById(`petAge${i}`).value,
+          });
+        }
+
+        // Here you can add your own logic to handle the form submission, including the pet data.
+
+        // After successful submission, hide the form and show the success page.
+        form.style.display = "none";
+        successPage.style.display = "block";
+      });
+    </script>
+  </body>
+</html>
