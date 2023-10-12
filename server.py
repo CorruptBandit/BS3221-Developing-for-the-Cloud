@@ -42,6 +42,7 @@ class User(BaseModel):
 
 # Create a model to represent the pet data
 class Pet(BaseModel):
+    owner: str
     species: str
     name: str
     age: str
@@ -56,10 +57,10 @@ users_collection = client["PetCompany"]["Users"]
 pets_collection = client["PetCompany"]["Pets"]
 
 async def save_user(user: User):
-    users_collection.model_dump(user.dict())
+    users_collection.insert_one(user.model_dump())
 
 async def save_pet(pet: Pet):
-    pets_collection.model_dump(pet.dict())
+    pets_collection.insert_one(pet.model_dump())
 
 @app.get("", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
@@ -91,13 +92,25 @@ async def register(user: User = Body(...), pets: List[Pet] = Body(...)):
 
 
 @app.get("/user", include_in_schema=False)
-async def get_user():
+async def get_user(request: Request, email: str):
     """
-    Assert user credentials
+    Get user details and their pets
+    """
+    with open("Test.txt", "w") as f:
+        f.write(email)
+    user = users_collection.find_one({"email": email})
 
-    Return user details
-    """
-    return 200
+    if not user:
+        return JSONResponse(content={"message": "User not found"}, status_code=status.HTTP_404_NOT_FOUND)
+
+    # Get the user's pets associated with their email
+    user_pets = pets_collection.find({"owner": email})
+
+    pet_list = []
+    for pet in user_pets:
+        pet_list.append({"name": pet["name"], "age": pet["age"], "species": pet["species"]})
+
+    return templates.TemplateResponse("user_info.html", {"request": request, "email": email, "pets": pet_list})
 
 
 def main():

@@ -104,8 +104,9 @@
       addPetBtn.addEventListener("click", addPetFields);
 
       async function submitForm() {
+        const email = document.getElementById("exampleInputEmail1").value;
         const userData = {
-          email: document.getElementById("exampleInputEmail1").value,
+          email: email,
           password: document.getElementById("exampleInputPassword1").value,
         };
 
@@ -114,7 +115,8 @@
           const species = document.getElementById(`petSpecies${i}`).value;
           const name = document.getElementById(`petName${i}`).value;
           const age = document.getElementById(`petAge${i}`).value;
-          petData.push({ species, name, age });
+          const owner = email;
+          petData.push({ owner, species, name, age });
         }
 
         const requestBody = {
@@ -130,7 +132,8 @@
         });
 
         if (response.status === 200) {
-          successPage.style.display = "block";
+          const redirectURL = "/user?email=" + encodeURIComponent(email)
+          window.location.href = redirectURL;
         } else {
           // Handle the error response
           const error = await response.json();
