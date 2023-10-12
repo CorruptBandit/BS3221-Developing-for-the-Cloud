@@ -28,8 +28,7 @@ app = FastAPIOffline(
 config = {
     "fastapi_host": "0.0.0.0",
     "fastapi_port": 8080,
-    "proxy_path": "",  # Empty string if not behind a reverse proxy
-
+    "proxy_path" : ""
 }
 
 template_dir = SCRIPT_DIR / "templates"
@@ -40,10 +39,10 @@ class User(BaseModel):
     email: str
     password: str
 
-# Create a model to represent the pet data
-class Pet(BaseModel):
+# Create a model to represent the dog data
+class Dog(BaseModel):
     owner: str
-    species: str
+    breed: str
     name: str
     age: str
 
@@ -53,14 +52,14 @@ client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
 # Send a ping to confirm a successful connection
 
 
-users_collection = client["PetCompany"]["Users"]
-pets_collection = client["PetCompany"]["Pets"]
+users_collection = client["DogCompany"]["Users"]
+dogs_collection = client["DogCompany"]["Dogs"]
 
 async def save_user(user: User):
     users_collection.insert_one(user.model_dump())
 
-async def save_pet(pet: Pet):
-    pets_collection.insert_one(pet.model_dump())
+async def save_dog(dog: Dog):
+    dogs_collection.insert_one(dog.model_dump())
 
 @app.get("", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
@@ -85,32 +84,30 @@ async def get_status():
     return 200
 
 @app.post("/register", include_in_schema=False)
-async def register(user: User = Body(...), pets: List[Pet] = Body(...)):
+async def register(user: User = Body(...), dogs: List[Dog] = Body(...)):
     await save_user(user)
-    for pet in pets:
-        await save_pet(pet)
+    for dog in dogs:
+        await save_dog(dog)
 
 
 @app.get("/user", include_in_schema=False)
 async def get_user(request: Request, email: str):
     """
-    Get user details and their pets
+    Get user details and their dogs
     """
-    with open("Test.txt", "w") as f:
-        f.write(email)
     user = users_collection.find_one({"email": email})
 
     if not user:
         return JSONResponse(content={"message": "User not found"}, status_code=status.HTTP_404_NOT_FOUND)
 
-    # Get the user's pets associated with their email
-    user_pets = pets_collection.find({"owner": email})
+    # Get the user's dogs associated with their email
+    user_dogs = dogs_collection.find({"owner": email})
 
-    pet_list = []
-    for pet in user_pets:
-        pet_list.append({"name": pet["name"], "age": pet["age"], "species": pet["species"]})
+    dog_list = []
+    for dog in user_dogs:
+        dog_list.append({"name": dog["name"], "age": dog["age"], "breed": dog["breed"]})
 
-    return templates.TemplateResponse("user_info.html", {"request": request, "email": email, "pets": pet_list})
+    return templates.TemplateResponse("user_info.html", {"request": request, "email": email, "dogs": dog_list})
 
 
 def main():
