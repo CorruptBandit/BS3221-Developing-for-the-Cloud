@@ -3,122 +3,192 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pet Registration Form</title>
+    <title>Legs Mutt's Move</title>
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container {
+        width: 400px;
+      }
+      .header {
+        text-align: center;
+        padding: 20px;
+        background-color: #007bff; /* Change this to your preferred background color */
+        color: #fff; /* Change this to your preferred text color */
+        font-size: 24px;
+      }
+    </style>
   </head>
   <body>
-    <form id="registrationForm">
-      <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          id="exampleInputEmail1"
-          aria-describedby="emailHelp"
-          placeholder="Enter email"
-        />
+    <div class="container">
+      <div class="header">Legs Mutt's Go</div>
+      <form id="registrationForm">
+        <div class="form-group">
+          <label for="exampleInputEmail1">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            id="exampleInputEmail1"
+            aria-describedby="emailHelp"
+            placeholder="Enter email"
+          />
+        </div>
+        <div class="form-group">
+          <label for="exampleInputPassword1">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="exampleInputPassword1"
+            placeholder="Password"
+          />
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="dogWalkerCheckbox" />
+          <label class="form-check-label" for="dogWalkerCheckbox">I'm a dog walker</label>
+        </div>
+        <div id="petFields">
+          <!-- Dog fields will be dynamically added here -->
+        </div>
+        <button type="button" class="btn btn-primary" id="addPetBtn">Add Dog</button>
+        <button type="button" class="btn btn-primary" id="submitBtn">Register/Login</button>
+      </form>
+      <div id="successPage" style="display: none">
+        <h2>Form Submitted Successfully!</h2>
+        <p>Thank you for your submission.</p>
       </div>
-      <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="exampleInputPassword1"
-          placeholder="Password"
-        />
-      </div>
-
-      <div id="petFields">
-        <!-- Pet fields will be dynamically added here -->
-      </div>
-
-      <button type="button" class="btn btn-primary" id="addPetBtn">
-        Add Pet
-      </button>
-
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-
-    <div id="successPage" style="display: none">
-      <h2>Form Submitted Successfully!</h2>
-      <p>Thank you for your submission.</p>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-
     <script>
-      // JavaScript to handle adding and submitting pets
+      // JavaScript to handle adding and submitting dogs
       const form = document.getElementById("registrationForm");
       const addPetBtn = document.getElementById("addPetBtn");
+      const submitBtn = document.getElementById("submitBtn");
       const petFields = document.getElementById("petFields");
       const successPage = document.getElementById("successPage");
+      const dogWalkerCheckbox = document.getElementById("dogWalkerCheckbox");
 
-      // Counter for tracking the number of added pets
+      // Counter for tracking the number of added dogs
       let petCounter = 0;
+      let isDogWalker = false;
 
-      // Function to add input fields for a pet
+      // Function to add input fields for a dog
       function addPetFields() {
         petCounter++;
         const petFieldDiv = document.createElement("div");
         petFieldDiv.innerHTML = `
-          <h4>Pet ${petCounter}</h4>
+          <h4>Dog ${petCounter}</h4>
           <div class="form-group">
-            <label for="petType${petCounter}">Pet Type</label>
-            <input
-              type="text"
-              class="form-control"
-              id="petType${petCounter}"
-              placeholder="Type"
-            />
+            <label for="petName${petCounter}">Dog Name</label>
+            <input type="text" class="form-control" id="petName${petCounter}" placeholder="Name" />
           </div>
           <div class="form-group">
-            <label for="petName${petCounter}">Pet Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="petName${petCounter}"
-              placeholder="Name"
-            />
+            <label for="petAge${petCounter}">Dog Age</label>
+            <input type="number" class="form-control" id="petAge${petCounter}" placeholder="Age" />
           </div>
           <div class="form-group">
-            <label for="petAge${petCounter}">Pet Age</label>
-            <input
-              type="number"
-              class="form-control"
-              id="petAge${petCounter}"
-              placeholder="Age"
-            />
+            <label for="petBreed${petCounter}">Dog Breed</label>
+            <input type="text" class="form-control" id="petBreed${petCounter}" placeholder="Breed" />
           </div>
         `;
         petFields.appendChild(petFieldDiv);
       }
 
-      // Add pet fields when the "Add Pet" button is clicked
-      addPetBtn.addEventListener("click", addPetFields);
+      // Add dog fields when the "Add Dog" button is clicked
+      addPetBtn.addEventListener("click", () => {
+        if (!isDogWalker) {
+          addPetFields();
+        }
+      });
 
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
+      // Function to disable "Add Dog" button and collapse dog input fields
+      function disableAddPet() {
+        isDogWalker = true;
+        addPetBtn.disabled = true;
+        petFields.style.display = "none";
+      }
 
-        // Collect pet information
-        const petData = [];
-        for (let i = 1; i <= petCounter; i++) {
-          petData.push({
-            type: document.getElementById(`petType${i}`).value,
-            name: document.getElementById(`petName${i}`).value,
-            age: document.getElementById(`petAge${i}`).value,
-          });
+      // Function to enable "Add Dog" button and show dog input fields
+      function enableAddPet() {
+        isDogWalker = false;
+        addPetBtn.disabled = false;
+        petFields.style.display = "block";
+      }
+
+      // Check the checkbox state when the page loads
+      if (dogWalkerCheckbox.checked) {
+        disableAddPet();
+      }
+
+      // Add an event listener to check the checkbox state
+      dogWalkerCheckbox.addEventListener("change", function () {
+        if (this.checked) {
+          disableAddPet();
+        } else {
+          enableAddPet();
+        }
+      });
+
+      async function submitForm() {
+        const email = document.getElementById("exampleInputEmail1").value;
+        const password = document.getElementById("exampleInputPassword1").value;
+
+        if (!email || !password) {
+          alert("Please enter both email and password.");
+          return;
         }
 
-        // Here you can add your own logic to handle the form submission, including the pet data.
+        const petData = [];
+        if (!dogWalkerCheckbox.checked) {
+          for (let i = 1; i <= petCounter; i++) {
+            const breed = document.getElementById(`petBreed${i}`).value;
+            const name = document.getElementById(`petName${i}`).value;
+            const age = document.getElementById(`petAge${i}`).value;
+            if (isNaN(age) || age <= 0) {
+              alert("Invalid age. Age must be a positive number.");
+              return;
+            }
+            petData.push({ owner: email, breed, name, age });
+          }
+        }
 
-        // After successful submission, hide the form and show the success page.
-        form.style.display = "none";
-        successPage.style.display = "block";
-      });
+        if (petData.length === 0 && !dogWalkerCheckbox.checked) {
+          alert("Please add at least one dog.");
+          return;
+        }
+
+        const requestBody = {
+          user: { email, password },
+          dogs: petData,
+          isDogWalker: dogWalkerCheckbox.checked,
+        };
+        const response = await fetch("/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (response.status === 200) {
+          const redirectURL = "/user?email=" + encodeURIComponent(email);
+          window.location.href = redirectURL;
+        } else {
+          // Handle the error response
+          const error = await response.json();
+          alert("Error: " + error.message);
+        }
+      }
+
+      submitBtn.addEventListener("click", submitForm);
     </script>
   </body>
 </html>

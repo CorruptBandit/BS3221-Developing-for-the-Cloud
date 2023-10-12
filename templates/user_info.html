@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Information</title>
+</head>
+<body>
+    <h1>Welcome {{ email }}</h1>
+    <h2>Dogs:</h2>
+    <ul>
+        {% for dog in dogs %}
+            <li>Name: {{ dog.name }}, Age: {{ dog.age }}, Breed: {{ dog.breed }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
