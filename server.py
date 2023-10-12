@@ -90,6 +90,14 @@ async def register(user: User = Body(...), dogs: List[Dog] = Body(...)):
         await save_dog(dog)
 
 
+@app.post("/check_user_exists", include_in_schema=False)
+async def validate(user: User = Body(...), dogs: List[Dog] = Body(...)):
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return False
+    else:
+        return True
+
 @app.get("/user", include_in_schema=False)
 async def get_user(request: Request, email: str):
     """
