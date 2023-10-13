@@ -144,6 +144,11 @@ async function submitForm() {
     const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
     const isDogWalker = dogWalkerCheckbox.checked; // Get the checkbox state here
 
+    if (!email.includes('@')) {
+      alert("Please enter a valid email address (missing '@').");
+      return;
+    }
+
     if (!email || !password) {
       alert("Please enter both email and password.");
       return;
