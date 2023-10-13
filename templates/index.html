@@ -186,8 +186,13 @@ async function submitForm() {
         };
 
         // Use the `isRegistered` variable to determine the endpoint
-        const endpoint = isRegistered ? "/register" : "/login";
+        let endpoint; // Declare the variable here
 
+        if (isRegistered) {
+          endpoint = "/login";
+        } else {
+          endpoint = "/register";
+        }
         const response2 = await fetch(endpoint, {
             method: "POST",
             headers: {

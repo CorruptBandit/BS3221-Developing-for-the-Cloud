@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
