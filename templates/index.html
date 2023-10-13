@@ -200,27 +200,12 @@ async function submitForm() {
             },
             body: JSON.stringify(requestBody),
         });
-
-        if (response2.status === 200) {
-            if (isRegistered) {
-                window.location.href = redirectURL;
-            } else {
-                // Handle the successful login
-                alert("Login successful!");
-            }
-        } else {
-            // Handle the error response
-            const error = await response.json();
-            alert("Error: " + error.message);
-        }
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
+        
+        window.location.href = redirectURL;
 
 
 
-      submitBtn.addEventListener("click", submitForm);
+    submitBtn.addEventListener("click", submitForm);
     </script>
   </body>
 </html>
