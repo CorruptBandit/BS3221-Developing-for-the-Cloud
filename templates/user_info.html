@@ -4,12 +4,21 @@
     <title>User Information</title>
 </head>
 <body>
+    {% if is_dog_walker %}
     <h1>Welcome {{ email }}</h1>
+    <p>You are a dog walker!</p>
+    {% else %}
+    <h1>Welcome {{ email }}</h1>
+    {% if dogs %}
     <h2>Dogs:</h2>
     <ul>
         {% for dog in dogs %}
             <li>Name: {{ dog.name }}, Age: {{ dog.age }}, Breed: {{ dog.breed }}</li>
         {% endfor %}
     </ul>
+    {% else %}
+    <p>You were previously a dog walker, please assign dogs to yourself on the main page, or if this was a mistake, switch back to being a dog walker on the main page.</p>
+    {% endif %}
+    {% endif %}
 </body>
 </html>

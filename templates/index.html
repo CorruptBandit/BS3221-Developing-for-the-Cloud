@@ -95,7 +95,7 @@ function addPetFields() {
     </div>
     <div class="form-group">
       <label for="petBreed${petCounter}">Dog Breed</label>
-      <input type="text" class "form-control" id="petBreed${petCounter}" placeholder="Breed" />
+      <input type="text" class="form-control" id="petBreed${petCounter}" placeholder="Breed" />
     </div>
   `;
   petFields.appendChild(petFieldDiv);
@@ -137,75 +137,87 @@ dogWalkerCheckbox.addEventListener("change", function () {
 });
 
 async function submitForm() {
+  try {
     const email = document.getElementById("exampleInputEmail1").value;
     const password = document.getElementById("exampleInputPassword1").value;
     const redirectURL = "/user?email=" + encodeURIComponent(email);
     const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
+    const isDogWalker = dogWalkerCheckbox.checked; // Get the checkbox state here
 
-    try {
-        // Perform a GET request to check_user_exists
-        const response = await fetch(checkUserExistsEndpoint, {
-            method: "GET",
-        });
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
 
-        if (!email || !password) {
-            alert("Please enter both email and password.");
-            return;
+    // Perform a GET request to check_user_exists
+    const response = await fetch(checkUserExistsEndpoint, {
+      method: "GET",
+    });
+
+    // Parse the response as a boolean value
+    const isRegistered = await response.json();
+    console.log(isRegistered);
+
+    if (!isRegistered && !isDogWalker) {
+      // Enforce the requirement for a non-dog walker to have at least one dog
+      if (petCounter === 0) {
+        alert("Non-dog walkers must add at least one dog.");
+        return;
+      }
+    }
+
+    const petData = [];
+    if (!isDogWalker) {
+      for (let i = 1; i <= petCounter; i++) {
+        const breed = document.getElementById(`petBreed${i}`).value;
+        const name = document.getElementById(`petName${i}`).value;
+        const age = document.getElementById(`petAge${i}`).value;
+        if (isNaN(age) || age <= 0) {
+          alert("Invalid age. Age must be a positive number.");
+          return;
         }
+        petData.push({ owner: email, breed, name, age });
+      }
+    }
+    console.log(isDogWalker);
+    const requestBody = {
+      user: { email, password, dog_walker: isDogWalker }, // Include dog_walker in the request
+      dogs: petData,
+    };
 
-        // Parse the response as a boolean value
-        const isRegistered = await response.json();
-        console.log(isRegistered);
+    // Use the `isRegistered` variable to determine the endpoint
+    let endpoint; // Declare the variable here
 
-        if (!isRegistered && !isDogWalker) {
-            // Enforce the requirement for a non-dog walker to have at least one dog
-            if (petCounter === 0) {
-                alert("Non-dog walkers must add at least one dog.");
-                return;
-            }
-        }
+    if (isRegistered) {
+      endpoint = "/login";
+    } else {
+      endpoint = "/register";
+    }
 
-        const petData = [];
-        if (!dogWalkerCheckbox.checked) {
-            for (let i = 1; i <= petCounter; i++) {
-                const breed = document.getElementById(`petBreed${i}`).value;
-                const name = document.getElementById(`petName${i}`).value;
-                const age = document.getElementById(`petAge${i}`).value;
-                if (isNaN(age) || age <= 0) {
-                    alert("Invalid age. Age must be a positive number.");
-                    return;
-                }
-                petData.push({ owner: email, breed, name, age });
-            }
-        }
+    // Perform a POST request to the appropriate endpoint
+    const response2 = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-        const requestBody = {
-            user: { email, password },
-            dogs: petData,
-            isDogWalker: dogWalkerCheckbox.checked,
-        };
+    if (response2.ok) {
+      // Check if the response is OK (status code 200)
+      window.location.href = redirectURL;
+    } else {
+      // Handle the error condition, e.g., display an error message
+      alert("Failed to submit the form. Please try again later.");
+    }
+  } catch (error) {
+    // Handle any unexpected errors that may occur during the async operations
+    console.error("An error occurred:", error);
+    alert("An error occurred. Please try again later.");
+  }
+}
 
-        // Use the `isRegistered` variable to determine the endpoint
-        let endpoint; // Declare the variable here
-
-        if (isRegistered) {
-          endpoint = "/login";
-        } else {
-          endpoint = "/register";
-        }
-        const response2 = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-        });
-        
-        window.location.href = redirectURL;
-
-
-
-    submitBtn.addEventListener("click", submitForm);
+      submitBtn.addEventListener("click", submitForm);
     </script>
   </body>
 </html>
