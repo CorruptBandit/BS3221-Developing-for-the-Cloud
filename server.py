@@ -84,19 +84,24 @@ async def get_status():
     return 200
 
 @app.post("/register", include_in_schema=False)
-async def register(user: User = Body(...), dogs: List[Dog] = Body(...)):
+async def register(email: User = Body(...), dogs: List[Dog] = Body(...)):
     await save_user(user)
     for dog in dogs:
         await save_dog(dog)
 
+@app.post("/login", include_in_schema=False)
+async def login(email: User = Body(...), dogs: List[Dog] = Body(...)):
+    await save_user(user)
+    for dog in dogs:
+        await save_dog(dog)
 
-@app.post("/check_user_exists", include_in_schema=False)
-async def validate(user: User = Body(...), dogs: List[Dog] = Body(...)):
+@app.get("/check_user_exists", include_in_schema=False)
+async def check_user_exists(email: str):
     user = users_collection.find_one({"email": email})
-    if not user:
-        return False
-    else:
+    if user is not None:
         return True
+    else:
+        return False
 
 @app.get("/user", include_in_schema=False)
 async def get_user(request: Request, email: str):

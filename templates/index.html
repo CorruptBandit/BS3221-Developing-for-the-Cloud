@@ -29,7 +29,7 @@
   </head>
   <body>
     <div class="container">
-      <div class="header">Legs Mutt's Go</div>
+      <div class="header">Legs Mutt's Move</div>
       <form id="registrationForm">
         <div class="form-group">
           <label for="exampleInputEmail1">Email address</label>
@@ -137,67 +137,82 @@ dogWalkerCheckbox.addEventListener("change", function () {
 });
 
 async function submitForm() {
-  const email = document.getElementById("exampleInputEmail1").value;
-  const password = document.getElementById("exampleInputPassword1").value;
-  const isRegistered = response = await fetch("/check_user_exists", {method: "POST"});
+    const email = document.getElementById("exampleInputEmail1").value;
+    const password = document.getElementById("exampleInputPassword1").value;
+    const redirectURL = "/user?email=" + encodeURIComponent(email);
+    const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
 
-  if (!email || !password) {
-    alert("Please enter both email and password.");
-    return;
-  }
+    try {
+        // Perform a GET request to check_user_exists
+        const response = await fetch(checkUserExistsEndpoint, {
+            method: "GET",
+        });
 
-  if (!isRegistered && !isDogWalker) {
-    // Enforce the requirement for a non-dog walker to have at least one dog
-    if (petCounter === 0) {
-      alert("Non-dog walkers must add at least one dog.");
-      return;
+        if (!email || !password) {
+            alert("Please enter both email and password.");
+            return;
+        }
+
+        // Parse the response as a boolean value
+        const isRegistered = await response.json();
+        console.log(isRegistered);
+
+        if (!isRegistered && !isDogWalker) {
+            // Enforce the requirement for a non-dog walker to have at least one dog
+            if (petCounter === 0) {
+                alert("Non-dog walkers must add at least one dog.");
+                return;
+            }
+        }
+
+        const petData = [];
+        if (!dogWalkerCheckbox.checked) {
+            for (let i = 1; i <= petCounter; i++) {
+                const breed = document.getElementById(`petBreed${i}`).value;
+                const name = document.getElementById(`petName${i}`).value;
+                const age = document.getElementById(`petAge${i}`).value;
+                if (isNaN(age) || age <= 0) {
+                    alert("Invalid age. Age must be a positive number.");
+                    return;
+                }
+                petData.push({ owner: email, breed, name, age });
+            }
+        }
+
+        const requestBody = {
+            user: { email, password },
+            dogs: petData,
+            isDogWalker: dogWalkerCheckbox.checked,
+        };
+
+        // Use the `isRegistered` variable to determine the endpoint
+        const endpoint = isRegistered ? "/register" : "/login";
+
+        const response2 = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (response2.status === 200) {
+            if (isRegistered) {
+                window.location.href = redirectURL;
+            } else {
+                // Handle the successful login
+                alert("Login successful!");
+            }
+        } else {
+            // Handle the error response
+            const error = await response.json();
+            alert("Error: " + error.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
     }
-  }
-
-  const petData = [];
-  if (!dogWalkerCheckbox.checked) {
-    for (let i = 1; i <= petCounter; i++) {
-      const breed = document.getElementById(`petBreed${i}`).value;
-      const name = document.getElementById(`petName${i}`).value;
-      const age = document.getElementById(`petAge${i}`).value;
-      if (isNaN(age) || age <= 0) {
-        alert("Invalid age. Age must be a positive number.");
-        return;
-      }
-      petData.push({ owner: email, breed, name, age });
-    }
-  }
-
-  const requestBody = {
-    user: { email, password },
-    dogs: petData,
-    isDogWalker: dogWalkerCheckbox.checked,
-  };
-
-  const endpoint = isRegistered ? "/login" : "/register";
-  
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (response.status === 200) {
-    if (isRegister) {
-      const redirectURL = "/user?email=" + encodeURIComponent(email);
-      window.location.href = redirectURL;
-    } else {
-      // Handle the successful login
-      alert("Login successful!");
-    }
-  } else {
-    // Handle the error response
-    const error = await response.json();
-    alert("Error: " + error.message);
-  }
 }
+
 
 
       submitBtn.addEventListener("click", submitForm);
