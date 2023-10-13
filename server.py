@@ -84,16 +84,19 @@ async def get_status():
     return 200
 
 @app.post("/register", include_in_schema=False)
-async def register(email: User = Body(...), dogs: List[Dog] = Body(...)):
+async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     await save_user(user)
-    for dog in dogs:
-        await save_dog(dog)
+    if dogs:
+        for dog in dogs:
+            await save_dog(dog)
+    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/login", include_in_schema=False)
-async def login(email: User = Body(...), dogs: List[Dog] = Body(...)):
-    await save_user(user)
-    for dog in dogs:
-        await save_dog(dog)
+async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])): 
+    if dogs:
+        for dog in dogs:
+            await save_dog(dog)
+    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.get("/check_user_exists", include_in_schema=False)
 async def check_user_exists(email: str):
