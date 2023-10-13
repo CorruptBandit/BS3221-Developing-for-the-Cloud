@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
-from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
@@ -67,6 +67,9 @@ async def save_dog(dog: Dog):
 async def redirect_typer():
     return RedirectResponse(f"{config['proxy_path']}/index")
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(SCRIPT_DIR / "static" / "images" / "favicon.ico")
 
 @app.get("/index", response_class=HTMLResponse,
          status_code=status.HTTP_200_OK,
@@ -98,7 +101,11 @@ async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([]))
 async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
 
     await save_user(user)
-    print(user.dog_walker)
+
+
+    stored_user = users_collection.find_one({"email": user.email})
+    if user.password != stored_user["password"]:
+        return JSONResponse(content={"message": "Invalid password"}, status_code=status.HTTP_401_UNAUTHORIZED)
 
     # Update the MongoDB document to set the dog_walker field
     users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})

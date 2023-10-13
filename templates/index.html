@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Legs Mutt's Move</title>
+    <link id="favicon" rel="icon" type="image/x-icon" href="/favicon.ico">
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
@@ -144,6 +145,11 @@ async function submitForm() {
     const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
     const isDogWalker = dogWalkerCheckbox.checked; // Get the checkbox state here
 
+    if (!email.includes('@')) {
+      alert("Please enter a valid email address (missing '@').");
+      return;
+    }
+
     if (!email || !password) {
       alert("Please enter both email and password.");
       return;
@@ -203,11 +209,14 @@ async function submitForm() {
       body: JSON.stringify(requestBody),
     });
 
-    if (response2.ok) {
+    if (response2.status === 401) {
+      // Display an alert for an incorrect password
+      alert("Incorrect password");
+    } else if (response2.ok) {
       // Check if the response is OK (status code 200)
       window.location.href = redirectURL;
     } else {
-      // Handle the error condition, e.g., display an error message
+      // Handle other error conditions, e.g., display an error message
       alert("Failed to submit the form. Please try again later.");
     }
   } catch (error) {
