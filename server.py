@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
@@ -38,6 +38,7 @@ templates = Jinja2Templates(directory=template_dir)
 class User(BaseModel):
     email: str
     password: str
+    dog_walker: bool
 
 # Create a model to represent the dog data
 class Dog(BaseModel):
@@ -84,17 +85,38 @@ async def get_status():
     return 200
 
 @app.post("/register", include_in_schema=False)
-async def register(user: User = Body(...), dogs: List[Dog] = Body(...)):
+async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     await save_user(user)
-    for dog in dogs:
-        await save_dog(dog)
+    # Update the MongoDB document to set the dog_walker field
+    users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})
+    if dogs:
+        for dog in dogs:
+            await save_dog(dog)
+    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
 
+@app.post("/login", include_in_schema=False)
+async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
+
+    await save_user(user)
+    print(user.dog_walker)
+
+    # Update the MongoDB document to set the dog_walker field
+    users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})
+    if dogs:
+        for dog in dogs:
+            await save_dog(dog)
+    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.get("/check_user_exists", include_in_schema=False)
+async def check_user_exists(email: str):
+    user = users_collection.find_one({"email": email})
+    if user is not None:
+        return True
+    else:
+        return False
 
 @app.get("/user", include_in_schema=False)
 async def get_user(request: Request, email: str):
-    """
-    Get user details and their dogs
-    """
     user = users_collection.find_one({"email": email})
 
     if not user:
@@ -107,7 +129,16 @@ async def get_user(request: Request, email: str):
     for dog in user_dogs:
         dog_list.append({"name": dog["name"], "age": dog["age"], "breed": dog["breed"]})
 
-    return templates.TemplateResponse("user_info.html", {"request": request, "email": email, "dogs": dog_list})
+    template_name = "user_info.html"
+    
+    # Determine if the user is a dog walker
+    is_dog_walker = user.get("dog_walker", False)
+
+    # Set the context variables
+    template_context = {"request": request, "email": email, "is_dog_walker": is_dog_walker, "dogs": dog_list}
+
+    return templates.TemplateResponse(template_name, template_context)
+
 
 
 def main():
