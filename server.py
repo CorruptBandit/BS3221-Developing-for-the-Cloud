@@ -36,6 +36,12 @@ config = {
 template_dir = SCRIPT_DIR / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
+uri = "mongodb://localhost:27017"
+client = MongoClient(uri, server_api=ServerApi("1"))
+
+users_collection = client["DogCompany"]["Users"]
+dogs_collection = client["DogCompany"]["Dogs"]
+
 # Create a model to represent the user data
 class User(BaseModel):
     email: str
@@ -49,14 +55,6 @@ class Dog(BaseModel):
     name: str
     age: str
 
-uri = "mongodb+srv://University:Winchester123@bs3221.gurmf48.mongodb.net/?retryWrites=true&w=majority"
-# Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
-# Send a ping to confirm a successful connection
-
-
-users_collection = client["DogCompany"]["Users"]
-dogs_collection = client["DogCompany"]["Dogs"]
 
 async def save_user(user: User):
     users_collection.insert_one(user.model_dump())
@@ -147,7 +145,6 @@ async def get_user(request: Request, email: str):
     template_context = {"request": request, "email": email, "is_dog_walker": is_dog_walker, "dogs": dog_list}
 
     return templates.TemplateResponse(template_name, template_context)
-
 
 
 def main():
