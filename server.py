@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Backend for a Dog Walker Service"""
+
 from pathlib import Path
 from typing import List, Optional
 
@@ -10,12 +12,21 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import certifi
+import bcrypt
 import markdown
 import uvicorn
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+
+config = {
+    "fastapi_host": "0.0.0.0",
+    "fastapi_port": 8080,
+    "proxy_path" : "",
+    "cert_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem",
+    "key_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem",
+    "mongo_uri": "mongodb://localhost:27017"
+}
 
 app = FastAPIOffline(
     title="Backend",
@@ -25,22 +36,16 @@ app = FastAPIOffline(
     docs_url=None
 )
 
-config = {
-    "fastapi_host": "0.0.0.0",
-    "fastapi_port": 8080,
-    "proxy_path" : "",
-    "cert_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem",
-    "key_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"
-}
+client = MongoClient(
+    config["mongo_uri"], 
+    server_api=ServerApi("1")
+)
+users_collection = client["DogCompany"]["Users"]
+dogs_collection = client["DogCompany"]["Dogs"]
 
 template_dir = SCRIPT_DIR / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
-uri = "mongodb://localhost:27017"
-client = MongoClient(uri, server_api=ServerApi("1"))
-
-users_collection = client["DogCompany"]["Users"]
-dogs_collection = client["DogCompany"]["Dogs"]
 
 # Create a model to represent the user data
 class User(BaseModel):
@@ -57,19 +62,24 @@ class Dog(BaseModel):
 
 
 async def save_user(user: User):
+    user.password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
+    print(user.password)
     users_collection.insert_one(user.model_dump())
 
 async def save_dog(dog: Dog):
     dogs_collection.insert_one(dog.model_dump())
+
 
 @app.get("", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 async def redirect_typer():
     return RedirectResponse(f"{config['proxy_path']}/index")
 
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return FileResponse(SCRIPT_DIR / "static" / "images" / "favicon.ico")
+
 
 @app.get("/index", response_class=HTMLResponse,
          status_code=status.HTTP_200_OK,
@@ -77,6 +87,7 @@ async def favicon():
          include_in_schema=False)
 async def index(request: Request):
     return templates.TemplateResponse("/index.html", context={"request": request})
+
 
 @app.get("/status", include_in_schema=False)
 async def get_status():
@@ -87,24 +98,21 @@ async def get_status():
     """
     return 200
 
+
 @app.post("/register", include_in_schema=False)
 async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     await save_user(user)
-    # Update the MongoDB document to set the dog_walker field
     users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})
     if dogs:
         for dog in dogs:
             await save_dog(dog)
     return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @app.post("/login", include_in_schema=False)
 async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
-
-    await save_user(user)
-
-
     stored_user = users_collection.find_one({"email": user.email})
-    if user.password != stored_user["password"]:
+    if not bcrypt.hashpw(user.password.encode(), stored_user["pordassw"]) == stored_user["password"]:
         return JSONResponse(content={"message": "Invalid password"}, status_code=status.HTTP_401_UNAUTHORIZED)
 
     # Update the MongoDB document to set the dog_walker field
@@ -114,6 +122,7 @@ async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
             await save_dog(dog)
     return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @app.get("/check_user_exists", include_in_schema=False)
 async def check_user_exists(email: str):
     user = users_collection.find_one({"email": email})
@@ -121,6 +130,7 @@ async def check_user_exists(email: str):
         return True
     else:
         return False
+
 
 @app.get("/user", include_in_schema=False)
 async def get_user(request: Request, email: str):
