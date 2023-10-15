@@ -28,7 +28,9 @@ app = FastAPIOffline(
 config = {
     "fastapi_host": "0.0.0.0",
     "fastapi_port": 8080,
-    "proxy_path" : ""
+    "proxy_path" : "",
+    "cert_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem",
+    "key_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"
 }
 
 template_dir = SCRIPT_DIR / "templates"
@@ -137,7 +139,7 @@ async def get_user(request: Request, email: str):
         dog_list.append({"name": dog["name"], "age": dog["age"], "breed": dog["breed"]})
 
     template_name = "user_info.html"
-    
+
     # Determine if the user is a dog walker
     is_dog_walker = user.get("dog_walker", False)
 
@@ -149,7 +151,13 @@ async def get_user(request: Request, email: str):
 
 
 def main():
-    uvicorn.run(app, host=config["fastapi_host"], port=config["fastapi_port"])
+    uvicorn.run(
+        app,
+        host=config["fastapi_host"],
+        port=config["fastapi_port"],
+        ssl_certfile=config["cert_file"],
+        ssl_keyfile=config["key_file"]
+    )
 
 
 if __name__ == "__main__":
