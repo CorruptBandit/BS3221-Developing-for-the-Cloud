@@ -150,6 +150,11 @@ async function submitForm() {
       return;
     }
 
+    if (!email.includes('.')) {
+      alert("Please enter a valid email address (missing '.').");
+      return;
+    }
+
     if (!email || !password) {
       alert("Please enter both email and password.");
       return;
@@ -178,8 +183,16 @@ async function submitForm() {
         const breed = document.getElementById(`petBreed${i}`).value;
         const name = document.getElementById(`petName${i}`).value;
         const age = document.getElementById(`petAge${i}`).value;
+        if (name == "") {
+          alert("Invalid name. Name is empty");
+          return;
+        }
         if (isNaN(age) || age <= 0) {
           alert("Invalid age. Age must be a positive number.");
+          return;
+        }
+        if (breed == "") {
+          alert("Invalid breed. Breed is empty");
           return;
         }
         petData.push({ owner: email, breed, name, age });
