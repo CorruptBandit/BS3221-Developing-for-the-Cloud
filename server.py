@@ -28,11 +28,19 @@ app = FastAPIOffline(
 config = {
     "fastapi_host": "0.0.0.0",
     "fastapi_port": 8080,
-    "proxy_path" : ""
+    "proxy_path" : "",
+    "cert_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem",
+    "key_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"
 }
 
 template_dir = SCRIPT_DIR / "templates"
 templates = Jinja2Templates(directory=template_dir)
+
+uri = "mongodb://localhost:27017"
+client = MongoClient(uri, server_api=ServerApi("1"))
+
+users_collection = client["DogCompany"]["Users"]
+dogs_collection = client["DogCompany"]["Dogs"]
 
 # Create a model to represent the user data
 class User(BaseModel):
@@ -47,14 +55,6 @@ class Dog(BaseModel):
     name: str
     age: str
 
-uri = "mongodb+srv://University:Winchester123@bs3221.gurmf48.mongodb.net/?retryWrites=true&w=majority"
-# Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
-# Send a ping to confirm a successful connection
-
-
-users_collection = client["DogCompany"]["Users"]
-dogs_collection = client["DogCompany"]["Dogs"]
 
 async def save_user(user: User):
     users_collection.insert_one(user.model_dump())
@@ -137,7 +137,7 @@ async def get_user(request: Request, email: str):
         dog_list.append({"name": dog["name"], "age": dog["age"], "breed": dog["breed"]})
 
     template_name = "user_info.html"
-    
+
     # Determine if the user is a dog walker
     is_dog_walker = user.get("dog_walker", False)
 
@@ -147,9 +147,14 @@ async def get_user(request: Request, email: str):
     return templates.TemplateResponse(template_name, template_context)
 
 
-
 def main():
-    uvicorn.run(app, host=config["fastapi_host"], port=config["fastapi_port"])
+    uvicorn.run(
+        app,
+        host=config["fastapi_host"],
+        port=config["fastapi_port"],
+        ssl_certfile=config["cert_file"],
+        ssl_keyfile=config["key_file"]
+    )
 
 
 if __name__ == "__main__":
