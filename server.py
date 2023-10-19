@@ -4,6 +4,7 @@
 
 from pathlib import Path
 from typing import List, Optional
+import os
 
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
@@ -20,12 +21,12 @@ import uvicorn
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 config = {
-    "fastapi_host": "0.0.0.0",
-    "fastapi_port": 8080,
-    "proxy_path" : "",
-    "cert_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem",
-    "key_file": "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem",
-    "mongo_uri": "mongodb://localhost:27017"
+    "fastapi_host": os.environ.get("FASTAPI_HOST", "0.0.0.0"),
+    "fastapi_port": int(os.environ.get("FASTAPI_PORT", 8080)),
+    "proxy_path": os.environ.get("PROXY_PATH", ""),
+    "cert_file": os.environ.get("CERT_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem"),
+    "key_file": os.environ.get("KEY_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"),
+    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://mongodb:27017"),
 }
 
 app = FastAPIOffline(
@@ -112,7 +113,7 @@ async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([]))
 @app.post("/login", include_in_schema=False)
 async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     stored_user = users_collection.find_one({"email": user.email})
-    if not bcrypt.hashpw(user.password.encode(), stored_user["pordassw"]) == stored_user["password"]:
+    if not bcrypt.hashpw(user.password.encode(), stored_user["password"]) == stored_user["password"]:
         return JSONResponse(content={"message": "Invalid password"}, status_code=status.HTTP_401_UNAUTHORIZED)
 
     # Update the MongoDB document to set the dog_walker field
