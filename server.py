@@ -5,6 +5,7 @@
 from pathlib import Path
 from typing import List, Optional
 import os
+import subprocess
 
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import bcrypt
+import certifi
 import markdown
 import uvicorn
 
@@ -26,7 +28,7 @@ config = {
     "proxy_path": os.environ.get("PROXY_PATH", ""),
     "cert_file": os.environ.get("CERT_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem"),
     "key_file": os.environ.get("KEY_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"),
-    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://mongodb:27017"),
+    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://legsmuttsmove.co.uk:27017")
 }
 
 app = FastAPIOffline(
@@ -39,7 +41,8 @@ app = FastAPIOffline(
 
 client = MongoClient(
     config["mongo_uri"], 
-    server_api=ServerApi("1")
+    server_api=ServerApi("1"),
+    tls=True,
 )
 users_collection = client["DogCompany"]["Users"]
 dogs_collection = client["DogCompany"]["Dogs"]

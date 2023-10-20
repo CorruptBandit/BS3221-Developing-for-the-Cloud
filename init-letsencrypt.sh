@@ -9,7 +9,7 @@ domains=(legsmuttsmove.co.uk www.legsmuttsmove.co.uk)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="o.g.smith@icloud.com" # Adding a valid address is strongly recommended
-staging=1 # Set to 1 if you're testing your setup to avoid hitting request limits
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
@@ -37,11 +37,12 @@ docker compose run --rm --entrypoint "\
     -subj '/CN=localhost'" certbot
 echo
 
-
+cp ./data/nginx/app.conf ./app.conf 
+sed -i -n '/upstream /q;p' ./data/nginx/app.conf  # Extract only the HTTP section (needed to generate certs)
 echo "### Starting nginx ..."
-sed -i '1,3s/^/# /' ./data/nginx/app.conf  # Comment out the upstream block as this will prevent NGINX starting
 docker compose up --force-recreate -d nginx
 echo
+rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
 
 echo "### Deleting dummy certificate for $domains ..."
 docker compose run --rm --entrypoint "\
@@ -79,4 +80,5 @@ echo
 
 echo "### Reloading nginx ..."
 docker compose exec nginx nginx -s reload
-sed -i '1,3s/^# //' ./data/nginx/app.conf  # Place back the upstream block
+cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
+chmod 600 ./data/mongo/mongodb.pem
