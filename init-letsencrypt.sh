@@ -37,10 +37,12 @@ docker compose run --rm --entrypoint "\
     -subj '/CN=localhost'" certbot
 echo
 
-
+cp ./data/nginx/app.conf ./app.conf 
+sed -i -n '/upstream /q;p' ./data/nginx/app.conf  # Extract only the HTTP section (needed to generate certs)
 echo "### Starting nginx ..."
 docker compose up --force-recreate -d nginx
 echo
+rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
 
 echo "### Deleting dummy certificate for $domains ..."
 docker compose run --rm --entrypoint "\

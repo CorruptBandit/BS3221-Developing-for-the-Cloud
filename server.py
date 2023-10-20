@@ -28,7 +28,7 @@ config = {
     "proxy_path": os.environ.get("PROXY_PATH", ""),
     "cert_file": os.environ.get("CERT_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem"),
     "key_file": os.environ.get("KEY_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"),
-    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://mongodb:27017")
+    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://legsmuttsmove.co.uk:27017")
 }
 
 app = FastAPIOffline(
@@ -43,7 +43,6 @@ client = MongoClient(
     config["mongo_uri"], 
     server_api=ServerApi("1"),
     tls=True,
-    tlsAllowInvalidHostnames=True  # To-Do: Fix this to only allow legsmuttsmove.co.uk
 )
 users_collection = client["DogCompany"]["Users"]
 dogs_collection = client["DogCompany"]["Dogs"]
