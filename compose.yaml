@@ -15,6 +15,7 @@ services:
       - ./static/:/app/static
       - ./templates/:/app/templates
       - ./data/certbot/conf:/etc/letsencrypt
+      - /etc/ssl/mongodb.pem:/etc/ssl/mongodb.pem
     depends_on:
       - mongodb
       - nginx
@@ -24,6 +25,10 @@ services:
     image: mongo:latest
     ports:
       - "27017:27017"
+    volumes:
+      - ./data/mongo/mongod.conf:/etc/mongod.conf
+      - /etc/ssl/mongodb.pem:/etc/ssl/mongodb.pem
+    command: ["mongod", "--config", "/etc/mongod.conf"]
 
   nginx:
     image: nginx:1.15-alpine
