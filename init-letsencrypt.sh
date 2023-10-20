@@ -80,3 +80,5 @@ echo
 
 echo "### Reloading nginx ..."
 docker compose exec nginx nginx -s reload
+cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
+chmod 600 ./data/mongo/mongodb.pem

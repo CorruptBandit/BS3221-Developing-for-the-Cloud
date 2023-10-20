@@ -29,13 +29,8 @@ services:
     volumes:
       - ./data/mongo/mongod.conf:/etc/mongod.conf
       - ./data/certbot/conf:/etc/letsencrypt
-    command:
-      - sh
-      - -c
-      - |
-        cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > /etc/ssl/mongodb.pem
-        chmod 644 /etc/ssl/mongodb.pem
-        mongod --config /etc/mongod.conf
+      - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
+    command: "mongod --config /etc/mongod.conf"
 
   nginx:
     image: nginx:1.15-alpine
