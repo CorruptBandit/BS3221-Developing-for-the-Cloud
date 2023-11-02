@@ -56,7 +56,11 @@ TLS is enabled by default across the board with NGINX, FastAPI and Mongo, all wi
    - [**Guide:** NGINX and Let's Encrypt with Docker](https://pentacent.medium.com/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
    - [**GitHub Repository:** NGINX Certbot](https://github.com/wmnnd/nginx-certbot)
 
+   The [init-letsencrypt.sh](./init-letsencrypt.sh) script was taken from the GitHub, although has been modfied for the purpose of this project.
+
 1. To configure MongoDB, follow these steps:
+
+   **This is here only as a reference, as these manual steps are not required. The steps are already scripted in [init-letsencrypt.sh](./init-letsencrypt.sh)**
 
     - Concatenate the Let's Encrypt certificates (fullchain.pem and privkey.pem) by running the following command:
 

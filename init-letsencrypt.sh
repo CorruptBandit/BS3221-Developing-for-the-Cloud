@@ -42,7 +42,6 @@ sed -i -n '/upstream /q;p' ./data/nginx/app.conf  # Extract only the HTTP sectio
 echo "### Starting nginx ..."
 docker compose up --force-recreate -d nginx
 echo
-rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
 
 echo "### Deleting dummy certificate for $domains ..."
 docker compose run --rm --entrypoint "\
@@ -81,4 +80,5 @@ echo
 echo "### Reloading nginx ..."
 docker compose exec nginx nginx -s reload
 cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
-chmod 600 ./data/mongo/mongodb.pem
+chmod 644 ./data/mongo/mongodb.pem
+rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
