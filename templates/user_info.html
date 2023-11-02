@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>User Information</title>
-    <link id="favicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link id="favicon" rel="icon" type="image/x-icon" href="../static/images/favicon.ico">
 </head>
 <body>
     {% if is_dog_walker %}
@@ -18,7 +18,7 @@
         {% endfor %}
     </ul>
     {% else %}
-    <p>You were previously a dog walker, please assign dogs to yourself on the main page, or if this was a mistake, switch back to being a dog walker on the main page.</p>
+    <p>You were previously a dog walker, now that you are no longer a dog walker you will be required to assign yourself dogs on the main page or switch back to being a dog walker.</p>
     {% endif %}
     {% endif %}
 </body>
