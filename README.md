@@ -83,7 +83,7 @@ TLS is enabled by default across the board with NGINX, FastAPI and Mongo, all wi
 1. Run the script using the following command:
 
    ```bash
-   ./init-letsencrypt.sh
+   sudo ./init-letsencrypt.sh
    ```
 
    This will incorporate the Let's Encrypt certificates into the containers.
