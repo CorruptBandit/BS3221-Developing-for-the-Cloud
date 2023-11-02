@@ -10,6 +10,7 @@ import subprocess
 from fastapi import Body, Request, status
 from fastapi_offline import FastAPIOffline
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
@@ -47,6 +48,7 @@ client = MongoClient(
 users_collection = client["DogCompany"]["Users"]
 dogs_collection = client["DogCompany"]["Dogs"]
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 template_dir = SCRIPT_DIR / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
@@ -67,7 +69,6 @@ class Dog(BaseModel):
 
 async def save_user(user: User):
     user.password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
-    print(user.password)
     users_collection.insert_one(user.model_dump())
 
 async def save_dog(dog: Dog):
@@ -78,11 +79,6 @@ async def save_dog(dog: Dog):
 @app.get("/", include_in_schema=False, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 async def redirect_typer():
     return RedirectResponse(f"{config['proxy_path']}/index")
-
-
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return FileResponse(SCRIPT_DIR / "static" / "images" / "favicon.ico")
 
 
 @app.get("/index", response_class=HTMLResponse,
