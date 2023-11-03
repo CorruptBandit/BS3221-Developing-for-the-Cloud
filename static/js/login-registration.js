@@ -80,7 +80,6 @@ async function submitForm() {
   try {
     const email = document.getElementById("exampleInputEmail1").value;
     const password = await hashPassword(document.getElementById("exampleInputPassword1").value);
-    console.log(password);
     const redirectURL = "/user?email=" + encodeURIComponent(email);
     const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
     const isDogWalker = dogWalkerCheckbox.checked; // Get the checkbox state here
@@ -102,7 +101,6 @@ async function submitForm() {
 
     // Parse the response as a boolean value
     const isRegistered = await response.json();
-    console.log(isRegistered);
 
     if (!isRegistered && !isDogWalker) {
       // Enforce the requirement for a non-dog walker to have at least one dog
@@ -125,7 +123,7 @@ async function submitForm() {
         petData.push({ owner: email, breed, name, age });
       }
     }
-    console.log(isDogWalker);
+
     const requestBody = {
       user: { email, password, dog_walker: isDogWalker }, // Include dog_walker in the request
       dogs: petData,
@@ -152,9 +150,15 @@ async function submitForm() {
     if (response2.status === 401) {
       // Display an alert for an incorrect password
       alert("Incorrect password");
-    } else if (response2.ok) {
-      // Check if the response is OK (status code 200)
-      window.location.href = redirectURL;
+    } else if (response.ok) {
+      response2.json() // Parse the JSON response
+      .then(function(data) {
+        // Extract the access_token from the response data
+        const access_token = data.access_token_cookie;
+        document.cookie = `access_token_cookie=${access_token}; path=/user`;
+        // You can now use the access_token in your fetch request to the '/user' endpoint.
+        window.location.href = "/user"
+      });
     } else {
       // Handle other error conditions, e.g., display an error message
       alert("Failed to submit the form. Please try again later.");
