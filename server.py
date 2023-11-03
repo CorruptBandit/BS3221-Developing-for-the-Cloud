@@ -2,12 +2,14 @@
 
 """Backend for a Dog Walker Service"""
 
+from datetime import timedelta
 from pathlib import Path
 from typing import List, Optional
 import os
 import subprocess
 
-from fastapi import Body, Request, status
+from fastapi import Body, Request, Security, status
+from fastapi_jwt import JwtAuthorizationCredentials, JwtAccessCookie
 from fastapi_offline import FastAPIOffline
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,7 +31,8 @@ config = {
     "proxy_path": os.environ.get("PROXY_PATH", ""),
     "cert_file": os.environ.get("CERT_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem"),
     "key_file": os.environ.get("KEY_FILE", "/etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem"),
-    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://legsmuttsmove.co.uk:27017")
+    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://legsmuttsmove.co.uk:27017"),
+    "jwt_secret_key": os.environ.get("JWT_SECRET_KEY", "insecure")
 }
 
 app = FastAPIOffline(
@@ -40,11 +43,18 @@ app = FastAPIOffline(
     docs_url=None
 )
 
+access_security = JwtAccessCookie(
+    secret_key=config["jwt_secret_key"], 
+    auto_error=True, 
+    access_expires_delta=timedelta(minutes=15)
+)
+
 client = MongoClient(
     config["mongo_uri"], 
     server_api=ServerApi("1"),
     tls=True,
 )
+
 users_collection = client["DogCompany"]["Users"]
 dogs_collection = client["DogCompany"]["Dogs"]
 
@@ -106,7 +116,9 @@ async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([]))
     if dogs:
         for dog in dogs:
             await save_dog(dog)
-    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
+    subject = {"email": user.email}
+    access_token = access_security.create_access_token(subject=subject)
+    return JSONResponse(content={"access_token_cookie": access_token}, status_code=status.HTTP_200_OK)
 
 
 @app.post("/login", include_in_schema=False)
@@ -120,7 +132,9 @@ async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     if dogs:
         for dog in dogs:
             await save_dog(dog)
-    return RedirectResponse(f"{config['proxy_path']}/user?email={user.email}", status_code=status.HTTP_303_SEE_OTHER)
+    subject = {"email": user.email}
+    access_token = access_security.create_access_token(subject=subject)
+    return JSONResponse(content={"access_token_cookie": access_token}, status_code=status.HTTP_200_OK)
 
 
 @app.get("/check_user_exists", include_in_schema=False)
@@ -133,28 +147,19 @@ async def check_user_exists(email: str):
 
 
 @app.get("/user", include_in_schema=False)
-async def get_user(request: Request, email: str):
-    user = users_collection.find_one({"email": email})
-
-    if not user:
-        return JSONResponse(content={"message": "User not found"}, status_code=status.HTTP_404_NOT_FOUND)
-
-    # Get the user's dogs associated with their email
-    user_dogs = dogs_collection.find({"owner": email})
+async def get_user(request: Request, credentials: JwtAuthorizationCredentials = Security(access_security)):
+    user = users_collection.find_one({"email": credentials["email"]})
+    user_dogs = dogs_collection.find({"owner": credentials["email"]})
 
     dog_list = []
     for dog in user_dogs:
         dog_list.append({"name": dog["name"], "age": dog["age"], "breed": dog["breed"]})
 
-    template_name = "user_info.html"
-
     # Determine if the user is a dog walker
     is_dog_walker = user.get("dog_walker", False)
-
     # Set the context variables
-    template_context = {"request": request, "email": email, "is_dog_walker": is_dog_walker, "dogs": dog_list}
-
-    return templates.TemplateResponse(template_name, template_context)
+    template_context = {"request": request, "email": credentials["email"], "is_dog_walker": is_dog_walker, "dogs": dog_list}
+    return templates.TemplateResponse("user_info.html", template_context)
 
 
 def main():
