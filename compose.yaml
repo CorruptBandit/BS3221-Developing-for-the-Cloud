@@ -15,7 +15,6 @@ services:
       - ./static/:/app/static
       - ./templates/:/app/templates
       - ./data/certbot/conf:/etc/letsencrypt
-      - /etc/ssl/mongodb.pem:/etc/ssl/mongodb.pem
     depends_on:
       - mongodb
       - nginx
