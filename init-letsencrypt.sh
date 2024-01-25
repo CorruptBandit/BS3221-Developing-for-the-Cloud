@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker compose)" ]; then
   exit 1
 fi
 
-domains=(legsmuttsmove.co.uk www.legsmuttsmove.co.uk)
+domains=(legsmuttsmove.co.uk)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="o.g.smith@icloud.com" # Adding a valid address is strongly recommended
@@ -45,9 +45,9 @@ echo
 
 echo "### Deleting dummy certificate for $domains ..."
 docker compose run --rm --entrypoint "\
-  rm -Rf /etc/letsencrypt/live/$domains && \
-  rm -Rf /etc/letsencrypt/archive/$domains && \
-  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
+  rm -Rf ./data/certbot/conf/live/$domains && \
+  rm -Rf ./data/certbot/conf/archive/$domains && \
+  rm -Rf ./data/certbot/conf/renewal/$domains.conf" certbot
 echo
 
 
@@ -79,6 +79,6 @@ echo
 
 echo "### Reloading nginx ..."
 docker compose exec nginx nginx -s reload
-cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
+cat ./data/certbot/conf/live/legsmuttsmove.co.uk/fullchain.pem ./data/certbot/conf/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
 chmod 644 ./data/mongo/mongodb.pem
 rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
