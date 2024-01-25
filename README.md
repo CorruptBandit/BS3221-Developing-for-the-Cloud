@@ -42,7 +42,7 @@ docker compose build
 To run the project, use the following command:
 
 ```bash
-docker compose up
+sudo docker compose up
 ```
 
 ### TLS (Transport Layer Security)
