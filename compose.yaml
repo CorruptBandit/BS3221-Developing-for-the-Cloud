@@ -29,7 +29,7 @@ services:
       - ./data/mongo/mongod.conf:/etc/mongod.conf
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
-    command: "mongod --config /etc/mongod.conf"
+    command: "/bin/sh -c 'mongod --config /etc/mongod.conf & while sleep 6h; do mongo --eval \"db.adminCommand({rotateCertificates: 1})\"; done'"
 
   nginx:
     image: nginx:1.15-alpine
@@ -49,4 +49,15 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+      - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
+    entrypoint: >
+      /bin/sh -c '
+        trap "exit" TERM;
+        while :; do
+          if certbot renew; then
+            cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > /etc/ssl/mongodb.pem;
+            chmod 644 /etc/ssl/mongodb.pem;
+          fi;
+          sleep 12h & wait $$!;
+        done;'
+
