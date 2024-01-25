@@ -28,7 +28,7 @@ This guide is how to run the working prototype of a Cloud Full Stack Implementat
 
 1. Copy the [.env.template](./.env.template) file and rename it to `.env`.
 2. Populate the `.env` file with the required values.
-3. Configure the TLS settings, see the [TLS section](###TLS(Transport-Layer-Security))
+3. Configure the TLS settings, see the [TLS section](#tls(transport-layer-security))
 
 ### Building
 
