@@ -35,7 +35,7 @@ This guide is how to run the working prototype of a Cloud Full Stack Implementat
 To build the project, use the following command:
 
 ```bash
-docker compose build
+sudo docker compose build
 ```
 
 ### Configuring
