@@ -41,9 +41,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - certbot
-    command: "/bin/sh -c 'sleep 10 while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
     image: certbot/certbot
@@ -52,10 +50,4 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
-    entrypoint: >
-      /bin/sh -c '
-        trap "exit" TERM;
-        while :; do
-          certbot renew --quiet --deploy-hook "cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > /etc/ssl/mongodb.pem && chmod 644 /etc/ssl/mongodb.pem"
-          sleep 12h & wait $$!;
-        done;'
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
