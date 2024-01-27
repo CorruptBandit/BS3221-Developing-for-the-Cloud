@@ -9,7 +9,7 @@ domains=(legsmuttsmove.co.uk www.legsmuttsmove.co.uk demo.legsmuttsmove.co.uk)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="o.g.smith@icloud.com"  # Adding a valid address is strongly recommended
-staging=1  # Set to 1 if you're testing your setup to avoid hitting request limits
+staging=0  # Set to 1 if you're testing your setup to avoid hitting request limits
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
@@ -81,7 +81,7 @@ echo
 
 cat ./data/certbot/conf/live/legsmuttsmove.co.uk/fullchain.pem ./data/certbot/conf/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
 chmod 644 ./data/mongo/mongodb.pem
-echo "### Stopping containers ..."
-docker compose down
+echo "### Stopping nginx ..."
+docker compose stop nginx
 rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
 echo "### Script complete"
