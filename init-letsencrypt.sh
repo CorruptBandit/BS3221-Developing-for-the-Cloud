@@ -18,6 +18,7 @@ if [ -d "$data_path" ]; then
   fi
 fi
 
+rm -Rf ./data/certbot/
 
 if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
