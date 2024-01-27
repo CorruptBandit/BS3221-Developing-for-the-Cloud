@@ -46,9 +46,9 @@ echo
 
 echo "### Deleting dummy certificate for $domains ..."
 docker compose run --rm --entrypoint "\
-  rm -Rf ./data/certbot/conf/live/$domains && \
-  rm -Rf ./data/certbot/conf/archive/$domains && \
-  rm -Rf ./data/certbot/conf/renewal/$domains.conf" certbot
+  rm -Rf /etc/letsencrypt/live/$domains && \
+  rm -Rf /etc/letsencrypt/archive/$domains && \
+  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
 echo
 
 
