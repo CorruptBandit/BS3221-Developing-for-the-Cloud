@@ -54,10 +54,6 @@ services:
       /bin/sh -c '
         trap "exit" TERM;
         while :; do
-          if certbot renew; then
-            cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > /etc/ssl/mongodb.pem;
-            chmod 644 /etc/ssl/mongodb.pem;
-          fi;
+          certbot renew --quiet --deploy-hook "cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > /etc/ssl/mongodb.pem && chmod 644 /etc/ssl/mongodb.pem"
           sleep 12h & wait $$!;
         done;'
-
