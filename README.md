@@ -24,17 +24,26 @@ This project leverages the following technologies and tools:
 
 This guide is how to run the working prototype of a Cloud Full Stack Implementation, **Wagg.ly**
 
-### Configuration
+### Prerequisites
 
 1. Copy the [.env.template](./.env.template) file and rename it to `.env`.
 2. Populate the `.env` file with the required values.
+3. Configure the [init-letsencrypt.sh](./init-letsencrypt.sh) script with the required values: `domains` and `email`, see the [TLS section](#tls-transport-layer-security) for more info.
 
 ### Building
 
 To build the project, use the following command:
 
 ```bash
-docker compose build
+sudo docker compose build
+```
+
+### Configuring
+
+To configure HTTPS & TLS, use the following command:
+
+```bash
+sudo ./init_letsencrypt.sh
 ```
 
 ### Running
@@ -47,7 +56,11 @@ sudo docker compose up
 
 ### TLS (Transport Layer Security)
 
-TLS is enabled by default across the board with NGINX, FastAPI and Mongo, all within Docker, this was achieved with the following steps:
+TLS is enabled by default across the board within NGINX, FastAPI and Mongo, all within Docker. 
+
+_There is currently no support for non-TLS distrubutions, manual changes would be required._
+
+Enabling TLS across all services  was achieved with the following steps:
 
 1. Configure the [init-letsencrypt.sh](./init-letsencrypt.sh) script with the required values: `domains` and `email`. 
 
@@ -65,20 +78,14 @@ TLS is enabled by default across the board with NGINX, FastAPI and Mongo, all wi
     - Concatenate the Let's Encrypt certificates (fullchain.pem and privkey.pem) by running the following command:
 
     ```bash
-    sudo cat /etc/letsencrypt/live/<url>/fullchain.pem /etc/letsencrypt/live/<url>/privkey.pem > mongodb.pem
+    sudo cat ./data/certbot/live/<url>/fullchain.pem ./data/certbot/live/<url>/privkey.pem > ./data/mongo/mongodb.pem
     ```
 
     - Change the permissions of the `mongodb.pem` file:
 
     ```bash
-    sudo chmod 644 mongodb.pem
+    sudo chmod 644 ./data/mongo/mongodb.pem
     ```
-
-   - Move the `mongodb.pem` file to the `/etc/ssl/` directory:
-
-   ```bash
-   sudo mv mongodb.pem /etc/ssl/mongodb.pem
-   ```
 
 1. Run the script using the following command:
 

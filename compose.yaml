@@ -15,7 +15,6 @@ services:
       - ./static/:/app/static
       - ./templates/:/app/templates
       - ./data/certbot/conf:/etc/letsencrypt
-      - /etc/ssl/mongodb.pem:/etc/ssl/mongodb.pem
     depends_on:
       - mongodb
       - nginx
@@ -30,7 +29,7 @@ services:
       - ./data/mongo/mongod.conf:/etc/mongod.conf
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
-    command: "mongod --config /etc/mongod.conf"
+    command: "/bin/sh -c 'mongod --config /etc/mongod.conf & while sleep 6h; do mongo --eval \"db.adminCommand({rotateCertificates: 1})\"; done'"
 
   nginx:
     image: nginx:1.15-alpine
@@ -50,4 +49,5 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+      - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

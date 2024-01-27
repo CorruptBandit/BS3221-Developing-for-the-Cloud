@@ -8,8 +8,8 @@ fi
 domains=(legsmuttsmove.co.uk www.legsmuttsmove.co.uk)
 rsa_key_size=4096
 data_path="./data/certbot"
-email="o.g.smith@icloud.com" # Adding a valid address is strongly recommended
-staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+email="o.g.smith@icloud.com"  # Adding a valid address is strongly recommended
+staging=0  # Set to 1 if you're testing your setup to avoid hitting request limits
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
@@ -18,6 +18,7 @@ if [ -d "$data_path" ]; then
   fi
 fi
 
+rm -Rf ./data/certbot/
 
 if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
@@ -30,6 +31,7 @@ fi
 echo "### Creating dummy certificate for $domains ..."
 path="/etc/letsencrypt/live/$domains"
 mkdir -p "$data_path/conf/live/$domains"
+touch ./data/mongo/mongodb.pem  # Must be created otherwise Docker volumes will create an empty dir
 docker compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
     -keyout '$path/privkey.pem' \
@@ -77,8 +79,9 @@ docker compose run --rm --entrypoint "\
     --force-renewal" certbot
 echo
 
-echo "### Reloading nginx ..."
-docker compose exec nginx nginx -s reload
-cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
+cat ./data/certbot/conf/live/legsmuttsmove.co.uk/fullchain.pem ./data/certbot/conf/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
 chmod 644 ./data/mongo/mongodb.pem
+echo "### Stopping nginx ..."
+docker compose stop nginx
 rm ./data/nginx/app.conf && mv ./app.conf ./data/nginx/app.conf
+echo "### Script complete"
