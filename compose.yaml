@@ -30,14 +30,14 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
     command: >
-      /bin/sh -c \
-      'mongod --config /etc/mongod.conf & \
+      /bin/sh -c '
+       mongod --config /etc/mongod.conf & \
        while sleep 6h; do
         mongosh --eval "db.adminCommand({rotateCertificates: 1})" \
         --host legsmuttsmove.co.uk \
         --tls \
         --tlsCertificateKeyFile /etc/ssl/mongodb.pem;
-       done'
+       done;'
 
   nginx:
     image: nginx:1.15-alpine
