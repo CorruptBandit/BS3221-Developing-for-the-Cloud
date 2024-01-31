@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8080:8080
+      - "8080:8080"
     environment:
       - FASTAPI_HOST=${FASTAPI_HOST}
       - FASTAPI_PORT=${FASTAPI_PORT}
@@ -30,14 +30,14 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
     command: >
-      /bin/sh -c 
-      'mongod --config /etc/mongod.conf & 
-      while sleep 6h; do 
-        mongosh --eval "db.adminCommand({rotateCertificates: 1})" 
-        --host legsmuttsmove.co.uk 
-        --tls 
-        --tlsCertificateKeyFile /etc/ssl/mongodb.pem; 
-      done'
+      /bin/sh -c \
+      'mongod --config /etc/mongod.conf & \
+       while sleep 6h; do
+        mongosh --eval "db.adminCommand({rotateCertificates: 1})" \
+        --host legsmuttsmove.co.uk \
+        --tls \
+        --tlsCertificateKeyFile /etc/ssl/mongodb.pem;
+       done'
 
   nginx:
     image: nginx:1.15-alpine
@@ -63,10 +63,9 @@ services:
         trap "exit" TERM;
         while :; do
           certbot renew --deploy-hook "
-            cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem 
-            /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem 
-            > /etc/ssl/mongodb.pem 
+            cat /etc/letsencrypt/live/legsmuttsmove.co.uk/fullchain.pem \
+            /etc/letsencrypt/live/legsmuttsmove.co.uk/privkey.pem \
+            > /etc/ssl/mongodb.pem \
             && chmod 644 /etc/ssl/mongodb.pem"
           sleep 12h & wait $$!;
         done;'
-
