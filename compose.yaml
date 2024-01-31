@@ -34,8 +34,8 @@ services:
       'mongod --config /etc/mongod.conf & 
       while sleep 6h; do 
         mongosh --eval "db.adminCommand({rotateCertificates: 1})" 
-        -host legsmuttsmove.co.uk 
-        -tls 
+        --host legsmuttsmove.co.uk 
+        --tls 
         --tlsCertificateKeyFile /etc/ssl/mongodb.pem; 
       done'
 
