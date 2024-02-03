@@ -38,16 +38,6 @@ addPetBtn.addEventListener("click", () => {
   }
 });
 
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  return crypto.subtle.digest("SHA-256", data).then(buffer => {
-    const hashArray = Array.from(new Uint8Array(buffer));
-    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
-    return hashHex;
-  });
-}
-
 // Function to disable "Add Dog" button and collapse dog input fields
 function disableAddPet() {
   isDogWalker = true;
@@ -79,8 +69,7 @@ dogWalkerCheckbox.addEventListener("change", function () {
 async function submitForm() {
   try {
     const email = document.getElementById("exampleInputEmail1").value;
-    const password = await hashPassword(document.getElementById("exampleInputPassword1").value);
-    const redirectURL = "/user?email=" + encodeURIComponent(email);
+    const password = document.getElementById("exampleInputPassword1").value;
     const checkUserExistsEndpoint = `/check_user_exists?email=${encodeURIComponent(email)}`;
     const isDogWalker = dogWalkerCheckbox.checked; // Get the checkbox state here
 

@@ -69,6 +69,7 @@ class User(BaseModel):
     password: str
     dog_walker: bool
 
+
 # Create a model to represent the dog data
 class Dog(BaseModel):
     owner: str
@@ -78,8 +79,10 @@ class Dog(BaseModel):
 
 
 async def save_user(user: User):
-    user.password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
+    user.password = hashed_password.decode()  # Convert bytes to string
     users_collection.insert_one(user.model_dump())
+
 
 async def save_dog(dog: Dog):
     dogs_collection.insert_one(dog.model_dump())
@@ -124,17 +127,21 @@ async def register(user: User = Body(...), dogs: Optional[List[Dog]] = Body([]))
 @app.post("/login", include_in_schema=False)
 async def login(user: User = Body(...), dogs: Optional[List[Dog]] = Body([])):
     stored_user = users_collection.find_one({"email": user.email})
-    if not bcrypt.hashpw(user.password.encode(), stored_user["password"]) == stored_user["password"]:
-        return JSONResponse(content={"message": "Invalid password"}, status_code=status.HTTP_401_UNAUTHORIZED)
+    
+    if stored_user and bcrypt.checkpw(user.password.encode(), stored_user["password"].encode()):
+        # Passwords match, continue with login
+        users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})
+        
+        if dogs:
+            for dog in dogs:
+                await save_dog(dog)
+        
+        subject = {"email": user.email}
+        access_token = access_security.create_access_token(subject=subject)
+        return JSONResponse(content={"access_token_cookie": access_token}, status_code=status.HTTP_200_OK)
+    else:
+        return JSONResponse(content={"message": "Invalid email or password"}, status_code=status.HTTP_401_UNAUTHORIZED)
 
-    # Update the MongoDB document to set the dog_walker field
-    users_collection.update_one({"email": user.email}, {"$set": {"dog_walker": user.dog_walker}})
-    if dogs:
-        for dog in dogs:
-            await save_dog(dog)
-    subject = {"email": user.email}
-    access_token = access_security.create_access_token(subject=subject)
-    return JSONResponse(content={"access_token_cookie": access_token}, status_code=status.HTTP_200_OK)
 
 
 @app.get("/check_user_exists", include_in_schema=False)
