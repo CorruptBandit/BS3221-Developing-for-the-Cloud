@@ -100,6 +100,7 @@ async function submitForm() {
     }
 
     const petData = [];
+    // Add pet data to the user
     if (!isDogWalker) {
       for (let i = 1; i <= petCounter; i++) {
         const breed = document.getElementById(`petBreed${i}`).value;
@@ -145,7 +146,7 @@ async function submitForm() {
         // Extract the access_token from the response data
         const access_token = data.access_token_cookie;
         document.cookie = `access_token_cookie=${access_token}; path=/user`;
-        // You can now use the access_token in your fetch request to the '/user' endpoint.
+        // Access_token can now be used in fetch requests to the '/user' endpoint.
         window.location.href = "/user"
       });
     } else {

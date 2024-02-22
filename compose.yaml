@@ -1,35 +1,34 @@
----
 services:
   app:
-    build:
+    build:  # Defines the build context and Dockerfile for the application.
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
-    environment:
+      - "8080:8080"  # Maps port 8080 of the container to port 8080 on the host.
+    environment:  # Specifies environment variables for the application container.
       - FASTAPI_HOST=${FASTAPI_HOST}
       - FASTAPI_PORT=${FASTAPI_PORT}
       - PROXY_PATH=${PROXY_PATH}
       - MONGO_URI=${MONGO_URI}
-    volumes:
+    volumes:  # Mounts volumes for static files, templates, and SSL certificates.
       - ./static/:/app/static
       - ./templates/:/app/templates
       - ./data/certbot/conf:/etc/letsencrypt
-    depends_on:
+    depends_on:  # Ensures the app starts after the MongoDB, NGINX, and Certbot services.
       - mongodb
       - nginx
       - certbot
 
   mongodb:
-    image: mongo:latest
-    hostname: legsmuttsmove.co.uk
+    image: mongo:latest  # Uses the latest MongoDB image.
+    hostname: legsmuttsmove.co.uk  # Sets the hostname for MongoDB container.
     ports:
-      - "27017:27017"
-    volumes:
+      - "27017:27017"  # Exposes MongoDB's default port to the host.
+    volumes:  # Mounts configuration files and SSL certificates for MongoDB.
       - ./data/mongo/mongod.conf:/etc/mongod.conf
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
-    command: >
+    command: >  # Custom command to run MongoDB with SSL and periodically rotate certificates.
       /bin/sh -c '
        mongod --config /etc/mongod.conf & \
        while sleep 6h; do
@@ -40,25 +39,26 @@ services:
        done;'
 
   nginx:
-    image: nginx:1.15-alpine
-    restart: unless-stopped
-    volumes:
+    image: nginx:1.15-alpine  # Uses NGINX 1.15 on Alpine for a lightweight web server.
+    restart: unless-stopped  # Automatically restarts unless explicitly stopped.
+    volumes:  # Mounts configuration directories and SSL certificate locations.
       - ./data/nginx:/etc/nginx/conf.d
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     ports:
-      - "80:80"
-      - "443:443"
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      - "80:80"  # Maps HTTP port.
+      - "443:443"  # Maps HTTPS port.
+    command: >  # Custom command to reload NGINX configuration every 6 hours.
+      /bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
 
   certbot:
-    image: certbot/certbot
-    restart: unless-stopped
-    volumes:
+    image: certbot/certbot  # Uses the official Certbot image for SSL certificate management.
+    restart: unless-stopped  # Automatically restarts unless explicitly stopped.
+    volumes:  # Mounts directories for configuration, webroot path, and SSL for MongoDB.
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ./data/mongo/mongodb.pem:/etc/ssl/mongodb.pem
-    entrypoint: >
+    entrypoint: >  # Custom entrypoint to periodically renew SSL certificates and update MongoDB's SSL certificate.
       /bin/sh -c '
         trap "exit" TERM;
         while :; do

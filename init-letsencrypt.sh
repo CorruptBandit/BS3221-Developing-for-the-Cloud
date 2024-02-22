@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Script to generate and embed TLS into Dockr
+# Credit: https://pentacent.medium.com/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
 
 if ! [ -x "$(command -v docker compose)" ]; then
   echo 'Error: docker compose is not installed.' >&2
@@ -79,6 +82,7 @@ docker compose run --rm --entrypoint "\
     --force-renewal" certbot
 echo
 
+# Create mongo cert
 cat ./data/certbot/conf/live/legsmuttsmove.co.uk/fullchain.pem ./data/certbot/conf/live/legsmuttsmove.co.uk/privkey.pem > ./data/mongo/mongodb.pem
 chmod 644 ./data/mongo/mongodb.pem
 echo "### Stopping nginx ..."

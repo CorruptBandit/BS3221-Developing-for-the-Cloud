@@ -1,24 +1,30 @@
 <!DOCTYPE html>
+<!-- Define the document type and version of HTML -->
 <html>
 <head>
-    <title>User Information</title>
-    <link id="favicon" rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <title>User Information</title> <!-- The title of the document shown in the browser's title bar or tab -->
+    <link id="favicon" rel="icon" type="image/x-icon" href="/static/images/favicon.ico"> <!-- Link to the favicon icon -->
 </head>
 <body>
+    <!-- Conditional statement to check if the user is a dog walker -->
     {% if is_dog_walker %}
-    <h1>Welcome {{ email }}</h1>
-    <p>You are a dog walker!</p>
+    <h1>Welcome {{ email }}</h1> <!-- Display the user's email -->
+    <p>You are a dog walker!</p> <!-- Confirmation message for dog walkers -->
     {% else %}
-    <h1>Welcome {{ email }}</h1>
+    <h1>Welcome {{ email }}</h1> <!-- Display the user's email for non-dog walkers -->
+    <!-- Check if there are dogs associated with the user -->
     {% if dogs %}
     <h2>Dogs:</h2>
     <ul>
+        <!-- Loop through each dog and display their details -->
         {% for dog in dogs %}
             <li>Name: {{ dog.name }}, Age: {{ dog.age }}, Breed: {{ dog.breed }}</li>
         {% endfor %}
     </ul>
     {% else %}
-    <p>You were previously a dog walker, now that you are no longer a dog walker you will be required to assign yourself dogs on the main page or switch back to being a dog walker.</p>
+    <!-- Message displayed if the user has no dogs listed but was previously a dog walker -->
+    <p>You were previously a dog walker, now that you are no longer a dog walker.</p>
+    <p>You are required to assign yourself dogs on the main page or switch back to being a dog walker.</p>
     {% endif %}
     {% endif %}
 </body>
