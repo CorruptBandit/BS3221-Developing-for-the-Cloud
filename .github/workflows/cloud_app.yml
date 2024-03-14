@@ -7,7 +7,7 @@ on:
     branches: [ add-ci ]
 
 jobs:
-  build-and-run:
+  test-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,8 +21,23 @@ jobs:
     - name: Install flake8
       run: pip install flake8
 
-    - name: Run flake8
-      run: flake8 . --max-line-length=120 --exit-zero
+    - name: Run flake8 and generate report
+      run: flake8 . --max-line-length=120 --output-file flake8_report.txt
 
     - name: Build with docker compose
       run: docker compose build
+
+    - name: Save Docker image
+      run: docker save bs3221-developing-for-the-cloud-app:latest -o bs3221-developing-for-the-cloud-app.tar
+
+    - name: Upload flake8 report
+      uses: actions/upload-artifact@v2
+      with:
+        name: flake8-report
+        path: flake8_report.txt
+
+    - name: Upload Docker image
+      uses: actions/upload-artifact@v2
+      with:
+        name: docker-image
+        path: bs3221-developing-for-the-cloud-app.tar
