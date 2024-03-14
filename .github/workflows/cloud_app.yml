@@ -2,9 +2,9 @@ name: Cloud App Testing
 
 on:
   push:
-    branches: [ add-ci ]
+    branches: [ main ]
   pull_request:
-    branches: [ add-ci ]
+    branches: [ main ]
 
 jobs:
   test-and-build:
