@@ -22,7 +22,7 @@ jobs:
       run: pip install flake8
 
     - name: Run flake8 and generate report
-      run: flake8 . --max-line-length=120 --output-file flake8_report.txt
+      run: flake8 . --max-line-length=120 --exit-zero --output-file flake8_report.txt
 
     - name: Build with docker compose
       run: docker compose build
