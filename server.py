@@ -9,16 +9,19 @@ The application utilises MongoDB for data storage and employs JWT for secure acc
 
 from datetime import timedelta
 from pathlib import Path
+from typing import List, Optional
 import os
 import bcrypt
 
-from fastapi import FastAPIOffline, Body, Request, Security, status
+from fastapi import Body, Request, Security, status
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi_jwt import JwtAccessCookie
+from fastapi_jwt import JwtAccessCookie, JwtAuthorizationCredentials
+from fastapi_offline import FastAPIOffline
 from pydantic import BaseModel
-from pymongo import MongoClient, server_api
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 import uvicorn
 
 
@@ -48,7 +51,7 @@ app = FastAPIOffline(
 # Setup JWT access security with a secret key and a 15-minute expiration
 access_security = JwtAccessCookie(
     secret_key=config["jwt_secret_key"], 
-    auto_error=True, 
+    auto_error=True,
     access_expires_delta=timedelta(minutes=15)
 )
 

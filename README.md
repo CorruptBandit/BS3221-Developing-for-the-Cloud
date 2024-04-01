@@ -26,9 +26,10 @@ This guide is how to run the working prototype of a Cloud Full Stack Implementat
 
 ### Prerequisites
 
+1. Clone this repo
 1. Copy the [.env.template](./.env.template) file and rename it to `.env`.
-2. Populate the `.env` file with the required values.
-3. Configure the [init-letsencrypt.sh](./init-letsencrypt.sh) script with the required values: `domains` and `email`, see the [TLS section](#tls-transport-layer-security) for more info.
+1. Populate the `.env` file with the required values.
+1. Configure the [init-letsencrypt.sh](./init-letsencrypt.sh) script with the required values: `domains` and `email`, see the [TLS section](#tls-transport-layer-security) for more info.
 
 ### Building
 
@@ -43,7 +44,7 @@ sudo docker compose build
 To configure HTTPS & TLS, use the following command:
 
 ```bash
-sudo ./init_letsencrypt.sh
+sudo ./init-letsencrypt.sh
 ```
 
 ### Running
