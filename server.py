@@ -35,7 +35,7 @@ config = {
     "proxy_path": os.environ.get("PROXY_PATH", ""),
     "cert_file": os.environ.get("CERT_FILE", "/etc/letsencrypt/live/example.co.uk/fullchain.pem"),
     "key_file": os.environ.get("KEY_FILE", "/etc/letsencrypt/live/example.co.uk/privkey.pem"),
-    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://example.co.uk:27017"),
+    "mongo_uri": os.environ.get("MONGO_URI", "mongodb://legsmuttsmove.co.uk:27017"),
     "jwt_secret_key": os.environ.get("JWT_SECRET_KEY", "insecure")
 }
 
@@ -93,13 +93,13 @@ async def save_user(user: User):
     """Hashes the user's password and saves the user to the database."""
     hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
     user.password = hashed_password.decode()  # Convert bytes to string
-    users_collection.insert_one(user.dict())
+    users_collection.insert_one(user.model_dump())
 
 
 # Utility function to save a dog to the MongoDB database
 async def save_dog(dog: Dog):
     """Saves the dog details to the database."""
-    dogs_collection.insert_one(dog.dict())
+    dogs_collection.insert_one(dog.model_dump())
 
 
 # Route to redirect the root URL to the index page

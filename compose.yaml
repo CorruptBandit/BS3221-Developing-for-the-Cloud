@@ -10,6 +10,9 @@ services:
       - FASTAPI_PORT=${FASTAPI_PORT}
       - PROXY_PATH=${PROXY_PATH}
       - MONGO_URI=${MONGO_URI}
+      - CERT_FILE=${CERT_FILE}
+      - KEY_FILE=${KEY_FILE}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     volumes:  # Mounts volumes for static files, templates, and SSL certificates.
       - ./static/:/app/static
       - ./templates/:/app/templates
