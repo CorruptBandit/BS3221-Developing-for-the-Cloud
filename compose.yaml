@@ -23,7 +23,7 @@ services:
       - certbot
 
   mongodb:
-    image: mongo:latest  # Uses the latest MongoDB image.
+    image: mongo:7.0.5  # Uses official MongoDB image.
     hostname: legsmuttsmove.co.uk  # Sets the hostname for MongoDB container.
     ports:
       - "27017:27017"  # Exposes MongoDB's default port to the host.
@@ -55,7 +55,7 @@ services:
       /bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
 
   certbot:
-    image: certbot/certbot  # Uses the official Certbot image for SSL certificate management.
+    image: certbot/certbot:v2.9.0  # Uses the official Certbot image for SSL certificate management.
     restart: unless-stopped  # Automatically restarts unless explicitly stopped.
     volumes:  # Mounts directories for configuration, webroot path, and SSL for MongoDB.
       - ./data/certbot/conf:/etc/letsencrypt
