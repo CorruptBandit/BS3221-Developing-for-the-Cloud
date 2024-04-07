@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
@@ -30,14 +30,29 @@ jobs:
     - name: Save Docker image
       run: docker save bs3221-developing-for-the-cloud-app:latest -o bs3221-developing-for-the-cloud-app.tar
 
+  handle-artifacts:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+    - name: Delete previous flake8 report
+      uses: geekyeggo/delete-artifact@v5
+      with:
+        name: flake8-report
+
     - name: Upload flake8 report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: flake8-report
         path: flake8_report.txt
 
+    - name: Delete previous Docker image
+      uses: geekyeggo/delete-artifact@v5
+      with:
+        name: docker-image
+
     - name: Upload Docker image
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: docker-image
         path: bs3221-developing-for-the-cloud-app.tar
