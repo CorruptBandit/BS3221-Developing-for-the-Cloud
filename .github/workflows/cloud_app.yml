@@ -30,15 +30,8 @@ jobs:
     - name: Save Docker image
       run: docker save bs3221-developing-for-the-cloud-app:latest -o bs3221-developing-for-the-cloud-app.tar
 
-  handle-artifacts:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-    - name: Delete previous flake8 report
-      uses: geekyeggo/delete-artifact@v5
-      with:
-        name: flake8-report
+    - name: Compress Docker image
+      run: gzip bs3221-developing-for-the-cloud-app.tar
 
     - name: Upload flake8 report
       uses: actions/upload-artifact@v4
@@ -46,13 +39,8 @@ jobs:
         name: flake8-report
         path: flake8_report.txt
 
-    - name: Delete previous Docker image
-      uses: geekyeggo/delete-artifact@v5
-      with:
-        name: docker-image
-
     - name: Upload Docker image
       uses: actions/upload-artifact@v4
       with:
         name: docker-image
-        path: bs3221-developing-for-the-cloud-app.tar
+        path: bs3221-developing-for-the-cloud-app.tar.gz
