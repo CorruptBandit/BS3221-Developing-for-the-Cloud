@@ -2,7 +2,7 @@ name: Cloud App Testing
 
 on:
   push:
-    branches: [ fix-env-vars ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
